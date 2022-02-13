@@ -61,8 +61,8 @@ public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
     private void setThreadContext(Object body) {
         if (body instanceof Account) {
             Account account = (Account) body;
-            if (account.getAccountId() == null) account.setAccountId(Account.KeyPrefix + UUID.randomUUID());
-            ThreadContext.put(DomainConstants.ACCOUNT_ID, account.getAccountId());
+            if (account.getKey() == null) account.setKey(Account.KeyPrefix + UUID.randomUUID());
+            ThreadContext.put(DomainConstants.ACCOUNT_ID, account.getKey());
             ThreadContext.put(DomainConstants.TRANSACTION_ID, String.valueOf(Instant.now().getEpochSecond()));
         }
     }
