@@ -6,7 +6,6 @@ import com.ultrawav.dynamodb_test.domain.DomainConstants;
 import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -16,9 +15,9 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.Instant;
+import java.util.UUID;
 
 @ControllerAdvice
 public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
@@ -32,13 +31,9 @@ public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return false;
+        return true;
     }
 
-    @Override
-    public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-        return null;
-    }
 
     @Override
     public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -49,6 +44,9 @@ public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
 
     private void saveRequest(Object body) {
         DynamoDbAsyncTable<AccountRequestResponse> accountRequestResponse = dbEnhancedAsyncClient.table("AccountRequestResponse", TableSchema.fromBean(AccountRequestResponse.class));
+        logger.info("Request body for accountId: {} saving", ThreadContext.get(DomainConstants.ACCOUNT_ID));
+        logger.info("Request body: {} saving", body);
+
         if (ThreadContext.get(DomainConstants.ACCOUNT_ID) != null) {
             AccountRequestResponse request = new AccountRequestResponse();
             request.setAccountId(ThreadContext.get(DomainConstants.ACCOUNT_ID));
@@ -63,13 +61,9 @@ public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
     private void setThreadContext(Object body) {
         if (body instanceof Account) {
             Account account = (Account) body;
+            if (account.getAccountId() == null) account.setAccountId(Account.KeyPrefix + UUID.randomUUID());
             ThreadContext.put(DomainConstants.ACCOUNT_ID, account.getAccountId());
             ThreadContext.put(DomainConstants.TRANSACTION_ID, String.valueOf(Instant.now().getEpochSecond()));
         }
-    }
-
-    @Override
-    public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return null;
     }
 }

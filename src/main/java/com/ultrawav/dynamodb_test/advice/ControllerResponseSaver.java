@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import java.util.concurrent.CompletableFuture;
 
+@ControllerAdvice
 public class ControllerResponseSaver implements ResponseBodyAdvice<Object> {
     private static final Logger logger = LoggerFactory.getLogger(ControllerResponseSaver.class);
 
@@ -30,7 +32,7 @@ public class ControllerResponseSaver implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return false;
+        return true;
     }
 
     @Override
@@ -40,6 +42,7 @@ public class ControllerResponseSaver implements ResponseBodyAdvice<Object> {
     }
 
     private void saveResponse(Object object) {
+        logger.info("saveResponse object is {}", object.getClass());
         if (object instanceof Account) {
             Account response = (Account) object;
 
@@ -50,28 +53,29 @@ public class ControllerResponseSaver implements ResponseBodyAdvice<Object> {
                     itemData.consistentRead(true);
                     itemData.key(Key.builder().partitionValue(ThreadContext.get(DomainConstants.ACCOUNT_ID)).sortValue(ThreadContext.get(DomainConstants.TRANSACTION_ID)).build());
 
+                    logger.info("itemData: {}", itemData);
                 });
 
                 item.whenCompleteAsync((data, exception) -> {
                     try {
                         if (data != null) {
                             data.setAccountResponse(response);
-                            // customerRequestResponse.putItem(data);
+                            // accountRequestResponse.putItem(data);
                             accountRequestResponse.updateItem(data);
                         } else {
-                            logger.error("No record Available for the customerId: {}",
+                            logger.error("No record Available for the accountId: {}",
                                     ThreadContext.get(DomainConstants.ACCOUNT_ID));
                         }
                     } catch (Exception e) {
-                        logger.error("Error occured while updating response body for customerId: {}",
+                        logger.error("Error occured while updating response body for accountId: {}",
                                 ThreadContext.get(DomainConstants.ACCOUNT_ID));
                     } finally {
                         removeThreadContext();
                     }
                 });
-            } else {
-                removeThreadContext();
             }
+        } else {
+            removeThreadContext();
         }
     }
 

@@ -1,19 +1,18 @@
 package com.ultrawav.dynamodb_test.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
+/*
+aws dynamodb create-table --table-name AccountRequestResponse --attribute-definitions AttributeName=AccountId,AttributeType=S AttributeName=TransactionId,AttributeType=S --key-schema AttributeName=AccountId,KeyType=HASH AttributeName=TransactionId,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --region us-east-1 --endpoint http://localhost:9100/
+
+ */
+
 @DynamoDbBean
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Setter
 public class AccountRequestResponse {
     private String accountId;
     private String transactionId;
@@ -21,25 +20,24 @@ public class AccountRequestResponse {
     private Account accountResponse;
 
     @DynamoDbPartitionKey
-    @DynamoDbAttribute("AccountId")
+    @DynamoDbAttribute(value = "AccountId")
     public String getAccountId() {
         return accountId;
     }
 
     @DynamoDbSortKey
-    @DynamoDbAttribute("TransactionId")
+    @DynamoDbAttribute(value = "TransactionId")
     public String getTransactionId() {
         return transactionId;
     }
 
     @DynamoDbAttribute(value = "Request")
-    public Account getCustomerRequest() {
+    public Account getAccountRequest() {
         return accountRequest;
     }
 
     @DynamoDbAttribute(value = "Response")
-    public Account getCustomerResponse() {
+    public Account getAccountResponse() {
         return accountResponse;
     }
-
 }
