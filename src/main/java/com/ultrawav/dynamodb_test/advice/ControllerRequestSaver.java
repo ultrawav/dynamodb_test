@@ -31,7 +31,7 @@ public class ControllerRequestSaver extends RequestBodyAdviceAdapter {
 
     @Override
     public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return true;
+        return false;
     }
 
 

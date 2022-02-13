@@ -3,9 +3,9 @@ package com.ultrawav.dynamodb_test.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-
-import java.util.List;
 
 /*
 aws dynamodb create-table \
@@ -18,13 +18,13 @@ aws dynamodb create-table \
 
  */
 
-@EqualsAndHashCode(callSuper = false)
 @DynamoDbBean
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@EqualsAndHashCode(callSuper = false)
 @Data
-public class Account extends AccountKey {
-
-    private String accountName;
-    private String nickname;
-    private List<String> props;
+public class Device extends AccountKey {
+    @Getter(onMethod_ = {@DynamoDbAttribute(value = "DeviceType")})
+    private String deviceType;
+    @Getter(onMethod_ = {@DynamoDbAttribute(value = "DeviceName")})
+    private String deviceName;
 }

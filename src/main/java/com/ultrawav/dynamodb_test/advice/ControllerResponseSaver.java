@@ -32,7 +32,7 @@ public class ControllerResponseSaver implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return true;
+        return false;
     }
 
     @Override

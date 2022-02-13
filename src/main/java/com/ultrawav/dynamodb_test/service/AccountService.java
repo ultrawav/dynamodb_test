@@ -1,6 +1,7 @@
 package com.ultrawav.dynamodb_test.service;
 
 import com.ultrawav.dynamodb_test.domain.Account;
+import com.ultrawav.dynamodb_test.domain.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,15 @@ public class AccountService {
         accountTable.putItem(account);
 
         return account;
+    }
+
+    public Device registerDevice(Device device) {
+
+        logger.info("registerDevice({})", device);
+        device.setSk("DEVICE");
+        DynamoDbAsyncTable<Device> accountTable = dbEnhancedAsyncClient.table("Account", TableSchema.fromBean(Device.class));
+        accountTable.putItem(device);
+
+        return device;
     }
 }
